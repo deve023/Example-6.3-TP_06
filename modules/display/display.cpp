@@ -1,6 +1,7 @@
 /*
-    Este archivo de codigo utiliza una interfaz paralela de 8 bits para comunicarse con la pantalla LCD:
-    3 pines para el control de la señal (rs, rw, e) y 8 pines D0, D1, ..., D7 para comunicar datos.
+    Este archivo de codigo utiliza una interfaz I2C.
+    Con solo dos pines, se comunica con el chip PCF8574.
+    El chip decodifica la información y actualiza el display.
     
     Arbol de funciones:
     displayInit()
@@ -16,7 +17,7 @@
         |      |- displayPinWrite()
         |      |- displayDataBusWrite()
         
-   Pines de placa NUCLEO asociados a la pantalla LCD: D0-D9    
+   Pines de placa NUCLEO asociados a la pantalla LCD: PB_8(I2C_SCL) y PB_9(I2C_SDA)   
 */
 
 //=====[Libraries]=============================================================
@@ -253,6 +254,7 @@ void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
 void displayStringWrite( const char * str )
 {
     while (*str) {
+        
         displayCodeWrite(DISPLAY_RS_DATA, *str++);
     }
 }
