@@ -17,7 +17,7 @@
         |      |- displayPinWrite()
         |      |- displayDataBusWrite()
         
-   Pines de placa NUCLEO asociados a la pantalla LCD: PB_8(I2C_SCL) y PB_9(I2C_SDA)   
+   Pines de placa NUCLEO asociados a la pantalla LCD: PB_8(I2C_SCL) y PB_9(I2C_SDA)
 */
 
 //=====[Libraries]=============================================================
@@ -83,6 +83,9 @@
 
 #define PCF8574_I2C_BUS_8BIT_WRITE_ADDRESS 78
 
+#define DISPLAY_ROWS 4 // UM 
+#define DISPLAY_COLS 20 // UM 
+
 //=====[Declaration of private data types]=====================================
 
 typedef struct{
@@ -122,6 +125,14 @@ I2C i2cPcf8574( I2C1_SDA, I2C1_SCL );
 static display_t display;
 static pcf8574_t pcf8574;
 static bool initial8BitCommunicationIsCompleted;
+
+static char matrixDisplay[DISPLAY_ROWS][DISPLAY_COLS] = {{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+                            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+                            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+                            {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}}; // UM - Matrix Dispaly delacration and initialization.
+//static char* matrixDisplayPointer = &(matrixDisplay[0][0]); // UM - Matrix display pointer declaration and initialization.
+static int displayCol, displayRow;
+
 
 //=====[Declarations (prototypes) of private functions]========================
 
@@ -216,6 +227,10 @@ void displayInit( displayConnection_t connection )
 
 void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
 {    
+    //matrixDisplayPointer = &(matrixDisplay[charPositionX][charPositionY]); // UM - Pointer placed in matrix given position (x,y).
+    displayRow = charPositionY;
+    displayCol = charPositionX;
+
     switch( charPositionY ) {
         case 0:
             displayCodeWrite( DISPLAY_RS_INSTRUCTION, 
@@ -254,8 +269,9 @@ void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
 void displayStringWrite( const char * str )
 {
     while (*str) {
-        
+        matrixDisplay[displayRow][displayCol++] = *str;
         displayCodeWrite(DISPLAY_RS_DATA, *str++);
+        //*matrixDisplayPointer++ = *str++; // UM - Overwrite display matrix.
     }
 }
 
@@ -377,4 +393,15 @@ static void displayDataBusWrite( uint8_t dataBus )
     delay( 1 );
     displayPinWrite( DISPLAY_PIN_EN, OFF );  
     delay( 1 );                   
+}
+
+
+void displayPrintMatrix() // UM - Function that prints matrix display.
+{
+    for(int i=0 ; i<DISPLAY_ROWS ; i++){
+        for(int j=0 ; j<DISPLAY_COLS ; j++){
+            printf("%c", matrixDisplay[i][j]);
+        }
+        printf("\n");
+    }
 }
